@@ -11,7 +11,7 @@ sudo dnf install gcc gcc-c++ gdb git cmake ninja-build \
   libxkbcommon libxkbcommon-x11 mesa-libEGL mesa-libGL mesa-dri-drivers \
   fontconfig dejavu-sans-fonts dejavu-sans-mono-fonts libX11 libXext libxcb \
   xcb-util-cursor xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm \
-  dbus-libs libXrender libXi libSM libICE wayland-libs pulseaudio-libs alsa-lib libdrm
+  dbus-libs libXrender libXi libSM libICE libwayland-client libwayland-cursor libwayland-egl pulseaudio-libs alsa-lib libdrm
 ```
 
 2. Download the Fedora archive and its `.sha256` file from the same GitHub release. Verify and extract:

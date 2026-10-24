@@ -27,7 +27,7 @@ for name in ["PySide6", "PySide6_Essentials", "PySide6_Addons", "shiboken6", "py
     distribution = importlib.metadata.distribution(name)
     target = licenses / name
     target.mkdir(parents=True, exist_ok=True)
-    (target / "METADATA.txt").write_text(str(distribution.metadata), encoding="utf-8")
+    (target / "METADATA.txt").write_text(distribution.read_text("METADATA") or "", encoding="utf-8")
     for file in distribution.files or []:
         if any(part.lower().startswith(("license", "copying", "notice")) for part in file.parts):
             source = Path(distribution.locate_file(file))
@@ -35,6 +35,6 @@ for name in ["PySide6", "PySide6_Essentials", "PySide6_Addons", "shiboken6", "py
                 destination = target / Path(*[part for part in file.parts if part not in ("..", ".")])
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, destination)
-python_license = Path(sys.base_prefix) / ("LICENSE.txt" if os.name == "nt" else "lib/python" + sys.version[:4] + "/LICENSE.txt")
+python_license = Path(sys.base_prefix) / ("LICENSE.txt" if os.name == "nt" else f"lib/python{sys.version_info.major}.{sys.version_info.minor}/LICENSE.txt")
 if python_license.is_file():
     shutil.copy2(python_license, licenses / "Python-LICENSE.txt")

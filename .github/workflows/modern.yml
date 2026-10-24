@@ -57,7 +57,7 @@ jobs:
           fontconfig dejavu-sans-fonts dejavu-sans-mono-fonts libX11 libXext libxcb
           xcb-util-cursor xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm
           dbus-libs libXrender libXi libSM libICE xorg-x11-server-Xvfb xauth weston
-          wayland-libs pulseaudio-libs alsa-lib libdrm
+          libwayland-client libwayland-cursor libwayland-egl pulseaudio-libs alsa-lib libdrm
       - uses: actions/checkout@v4
       - run: python3 -m pip install './modern[test,package]'
       - name: Fedora integration tests (GCC, GDB, Git, PTY, Qt)
