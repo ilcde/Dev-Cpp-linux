@@ -55,8 +55,8 @@ def import_project(path):
     if options.getboolean("UseCustomMakefile", False):
         raise ValueError("Custom Makefile projects need explicit CMake/toolchain configuration; automatic import is unavailable.")
     def paths(key):
-        # TStrings.DelimitedText uses comma-separated, quoted entries upstream.
-        return [p.strip().replace("\\", "/") for p in next(csv.reader([options.get(key, "")], skipinitialspace=True)) if p.strip()]
+        # Source/ProjectTypes.pas explicitly sets the TStringList delimiter.
+        return [p.strip().replace("\\", "/") for p in next(csv.reader([options.get(key, "")], delimiter=";", skipinitialspace=True)) if p.strip()]
     project = Project(sources=sources, include_dirs=paths("Includes"), library_dirs=paths("Libs"))
     warnings.insert(0, "Compiler settings use C23/C++26 defaults. Review toolchain, flags and libraries before building.")
     return project, warnings

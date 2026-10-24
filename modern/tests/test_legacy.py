@@ -7,13 +7,13 @@ from devcpp.core import Project
 def test_dev_import_retains_sources_paths_and_original(tmp_path):
     (tmp_path / "src").mkdir()
     (tmp_path / "src/main.cpp").write_text("int main() {}")
-    data = '[Project]\nType=1\nUnitCount=2\nIsCpp=1\nIncludes="include folder",headers\nLibs=libs\nLinker=-lcustom\n[Unit1]\nFileName=src\\main.cpp\nCompile=1\n[Unit2]\nFileName=ignored.cpp\nCompile=0\n'
+    data = '[Project]\nType=1\nUnitCount=2\nIsCpp=1\nIncludes="include folder";headers;"directory,with,commas"\nLibs=libs\nLinker=-lcustom\n[Unit1]\nFileName=src\\main.cpp\nCompile=1\n[Unit2]\nFileName=ignored.cpp\nCompile=0\n'
     path = tmp_path / "project.dev"
     path.write_text(data)
     original = path.read_bytes()
     project, warnings = import_project(path)
     assert project.sources == ["src/main.cpp"]
-    assert project.include_dirs == ["include folder", "headers"]
+    assert project.include_dirs == ["include folder", "headers", "directory,with,commas"]
     assert project.library_dirs == ["libs"]
     assert any("-lcustom" in warning for warning in warnings)
     assert path.read_bytes() == original

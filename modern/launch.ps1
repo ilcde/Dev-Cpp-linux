@@ -7,12 +7,11 @@ if (Test-Path -LiteralPath $portableTools) {
 }
 $workspace = if ($args.Count -gt 0) { $args[0] } else { Join-Path $modernRoot 'examples\hello' }
 $executable = Join-Path $modernRoot 'dist\DevCppModern\DevCppModern.exe'
-if (Test-Path -LiteralPath $executable) {
+$python = Join-Path $repositoryRoot '.venv\Scripts\python.exe'
+if (Test-Path -LiteralPath $python) {
+    & $python -m devcpp.app $workspace
+} elseif (Test-Path -LiteralPath $executable) {
     & $executable $workspace
 } else {
-    $python = Join-Path $repositoryRoot '.venv\Scripts\python.exe'
-    if (-not (Test-Path -LiteralPath $python)) {
-        throw 'Run the installation commands in modern/README.md first.'
-    }
-    & $python -m devcpp.app $workspace
+    throw 'Run the installation commands in modern/README.md first.'
 }
