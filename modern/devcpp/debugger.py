@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from PySide6.QtCore import QObject, QProcess, Signal
 from pygdbmi.gdbmiparser import parse_response
+from .runtime import process_environment
 
 
 class Debugger(QObject):
@@ -15,6 +16,7 @@ class Debugger(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.process = QProcess(self)
+        self.process.setProcessEnvironment(process_environment())
         self.process.readyReadStandardOutput.connect(self.read)
         self.process.readyReadStandardError.connect(lambda: self.output.emit(bytes(self.process.readAllStandardError()).decode("utf-8", "replace")))
         self.process.errorOccurred.connect(lambda _: self.output.emit(self.process.errorString()))

@@ -13,6 +13,8 @@ New projects default to `standard_c: "c23"` and `standard_cpp: "c++26"`. Existin
 
 The IDE chooses compiler flags; it cannot add missing compiler/library features. The integration tests compile actual C23 constructs and C++26 pack indexing. Those tests do not establish full language conformance.
 
+Try the ready-to-build examples in `modern/examples/c23` and `modern/examples/cpp26` (or `examples/` in a release archive).
+
 ## Configuration reference
 
 | Key | Default | Meaning |

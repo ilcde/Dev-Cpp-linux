@@ -72,3 +72,4 @@ modern/packaging/*.spec
 
 modern/release/
 modern/ci-artifacts/
+/devcpp-self-test.log

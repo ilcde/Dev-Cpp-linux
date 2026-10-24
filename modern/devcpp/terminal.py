@@ -10,6 +10,7 @@ import pyte
 from PySide6.QtCore import Qt, Signal, QTimer
 from PySide6.QtGui import QFont, QTextCursor
 from PySide6.QtWidgets import QApplication, QTextEdit
+from .runtime import external_environment
 
 
 class Terminal(QTextEdit):
@@ -32,7 +33,7 @@ class Terminal(QTextEdit):
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.render)
         self.timer.start(33)
-        env = dict(os.environ, TERM="xterm-256color", COLORTERM="truecolor")
+        env = dict(external_environment(), TERM="xterm-256color", COLORTERM="truecolor")
         try:
             if os.name == "nt":
                 from winpty import PtyProcess

@@ -5,6 +5,7 @@ import signal
 import subprocess
 from pathlib import Path
 from PySide6.QtCore import QObject, QProcess, Signal
+from .runtime import process_environment
 
 
 class Job(QObject):
@@ -14,6 +15,7 @@ class Job(QObject):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.process = QProcess(self)
+        self.process.setProcessEnvironment(process_environment())
         if os.name != "nt":
             params = QProcess.UnixProcessParameters()
             params.flags = QProcess.UnixProcessFlag.CreateNewSession

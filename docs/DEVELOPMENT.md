@@ -37,7 +37,7 @@ python -m pytest modern/tests -q
 
 The suite includes UTF-8/BOM/CRLF saves, cancelled tab closes, argument boundaries, project validation, Git rename records, actual Git stage/commit with Unicode paths, mixed C/C++ compilation and execution, actual GDB breakpoint/step/variable/stack operations, shell interaction, and Build/Run through the Qt window. Dedicated standards tests use C23 `constexpr` and C++26 pack indexing.
 
-Tests without required tools may skip. Release CI installs the tools first; inspect the test reports rather than treating a skipped test as platform validation. Qt tests use `QT_QPA_PLATFORM=offscreen`; packaged Fedora binaries are additionally started under X11 and Wayland.
+Tests without required tools may skip. Release CI installs the tools first; inspect the test reports rather than treating a skipped test as platform validation. Qt tests use `QT_QPA_PLATFORM=offscreen`; packaged Fedora binaries additionally compile and run a generated C23/C++26 project in the terminal and inspect its GDB stack under both X11 and Wayland. Windows runs the same packaged self-test. The hidden `--self-test` option always uses a temporary workspace and writes `devcpp-self-test.log` in the current directory.
 
 To capture the actual Qt UI for review:
 

@@ -31,8 +31,9 @@ jobs:
       - name: Packaged Windows executable
         shell: pwsh
         run: |
-          $app = Start-Process modern/dist/DevCppModern/DevCppModern.exe -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru
-          if (-not $app.WaitForExit(30000)) { $app.Kill(); throw 'Application did not close' }
+          $app = Start-Process modern/dist/DevCppModern/DevCppModern.exe -ArgumentList '--self-test' -WindowStyle Hidden -PassThru
+          if (-not $app.WaitForExit(60000)) { $app.Kill(); throw 'Application did not close' }
+          Get-Content devcpp-self-test.log -ErrorAction SilentlyContinue
           if ($app.ExitCode -ne 0) { throw 'Application startup failed' }
         env:
           QT_QPA_PLATFORM: offscreen
@@ -66,7 +67,7 @@ jobs:
           QT_QPA_PLATFORM: offscreen
       - run: python3 modern/packaging/build.py
       - name: Packaged binary under X11
-        run: xvfb-run -a env QT_QPA_PLATFORM=xcb modern/dist/DevCppModern/DevCppModern --smoke-test
+        run: xvfb-run -a env QT_QPA_PLATFORM=xcb modern/dist/DevCppModern/DevCppModern --self-test
       - name: Packaged binary under Wayland
         shell: bash
         run: |
@@ -81,7 +82,7 @@ jobs:
             sleep 0.1
           done
           test -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" || { cat weston.log; exit 1; }
-          QT_QPA_PLATFORM=wayland modern/dist/DevCppModern/DevCppModern --smoke-test
+          QT_QPA_PLATFORM=wayland modern/dist/DevCppModern/DevCppModern --self-test
       - run: python3 modern/packaging/bundle.py fedora44-x86_64
       - uses: actions/upload-artifact@v4
         with:
@@ -94,3 +95,4 @@ jobs:
           path: |
             fedora-tests.xml
             weston.log
+            devcpp-self-test.log

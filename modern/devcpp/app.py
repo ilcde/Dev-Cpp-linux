@@ -19,6 +19,7 @@ from .debugger import Debugger
 from .appearance import Background, Presence, STYLE
 from .dialogs import ProjectDialog, SettingsDialog
 from .icons import icon
+from .runtime import prepare_runtime
 
 
 class Window(QMainWindow):
@@ -615,10 +616,15 @@ def main():
     parser = argparse.ArgumentParser(description="Dev-C++ Modern")
     parser.add_argument("workspace", nargs="?", default=str(Path.cwd()))
     parser.add_argument("--smoke-test", action="store_true", help=argparse.SUPPRESS)
+    parser.add_argument("--self-test", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setStyleSheet(STYLE)
+    prepare_runtime()
+    if args.self_test:
+        from .selftest import run
+        return run(app)
     root = Path(args.workspace).resolve()
     if not root.is_dir():
         QMessageBox.critical(None, "Dev-C++ Modern", "Workspace is not a directory: " + str(root))

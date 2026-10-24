@@ -1,0 +1,4 @@
+{
+  "sources": ["main.cpp"],
+  "standard_cpp": "c++26"
+}
