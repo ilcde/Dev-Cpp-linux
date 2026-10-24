@@ -24,7 +24,7 @@ Add `C:\msys64\ucrt64\bin` and your Git installation directory to the PATH used 
 
 Do not combine a 32-bit compiler, 64-bit libraries and a mismatched debugger. Use the same toolchain for compilation and debugging. Old TDM-GCC versions shipped with legacy Dev-C++ do not support the new default standards.
 
-The integrated shell is PowerShell without user profiles, hosted through ConPTY. `Ctrl+C` interrupts the foreground program; `Ctrl+Shift+C/V` copies/pastes. Build/run starts a separate program terminal so commands are not injected into another program's stdin.
+The integrated shell is PowerShell without user profiles. Source runs use ConPTY; the packaged GUI uses the tested WinPTY backend because the bundled ConPTY backend fails to initialize in some windowed processes. Both are real pseudoterminals. `Ctrl+C` interrupts the foreground program; `Ctrl+Shift+C/V` copies/pastes. Build/run starts a separate program terminal so commands are not injected into another program's stdin.
 
 ## Run from source
 

@@ -5,6 +5,7 @@ import os
 import shlex
 import subprocess
 import threading
+import sys
 from pathlib import Path
 import pyte
 from PySide6.QtCore import Qt, Signal, QTimer
@@ -36,14 +37,19 @@ class Terminal(QTextEdit):
         env = dict(external_environment(), TERM="xterm-256color", COLORTERM="truecolor")
         try:
             if os.name == "nt":
-                from winpty import PtyProcess
-                self.pty = PtyProcess.spawn(subprocess.list2cmdline(command) if command else "powershell.exe -NoLogo -NoProfile", cwd=str(root), env=env, dimensions=(24, 100))
+                from winpty import PtyProcess, Backend
+                # Bundled ConPTY 3.x can panic in a windowed frozen process.
+                # WinPTY is the tested GUI fallback; source runs use ConPTY.
+                backend = Backend.WinPTY if getattr(sys, "frozen", False) else Backend.ConPTY
+                self.pty = PtyProcess.spawn(command or ["powershell.exe", "-NoLogo", "-NoProfile"], cwd=str(root), env=env, dimensions=(24, 100), backend=backend)
             else:
                 from ptyprocess import PtyProcessUnicode
                 self.pty = PtyProcessUnicode.spawn(command or [os.environ.get("SHELL", "/bin/bash"), "-i"], cwd=str(root), env=env, dimensions=(24, 100))
             self.reader = threading.Thread(target=self.read_loop, daemon=True)
             self.reader.start()
-        except Exception as exc:
+        except BaseException as exc:
+            if not isinstance(exc, Exception) and type(exc).__name__ != "PanicException":
+                raise
             self.on_end(str(exc))
 
     def read_loop(self):

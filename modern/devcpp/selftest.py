@@ -2,6 +2,8 @@
 from pathlib import Path
 import tempfile
 import time
+import sys
+import traceback
 from PySide6.QtCore import QSettings, QTimer
 from .app import Window
 from .core import Project
@@ -29,11 +31,16 @@ def run(app):
         window.debugger.output.connect(debug_output.append)
         timer = QTimer()
         started = time.monotonic()
+        finished = [False]
 
         def finish(ok, message):
+            if finished[0]:
+                return
+            finished[0] = True
             timer.stop()
             log = Path.cwd() / "devcpp-self-test.log"
-            log.write_text(message + "\n" + window.output.toPlainText() + "\n" + "".join(debug_output), encoding="utf-8")
+            terminal = "\n".join(window.run_terminal.screen.display) if window.run_terminal else "No terminal widget"
+            log.write_text(message + "\n" + window.output.toPlainText() + "\n" + terminal + "\n" + "".join(debug_output), encoding="utf-8")
             window.close()
             app.exit(0 if ok else 1)
 
@@ -50,8 +57,13 @@ def run(app):
                 finish(stopped[0].get("frame", {}).get("func") == "main", "Packaged build, terminal run and GDB stack check completed")
 
         window.error = lambda text: finish(False, text)
+        previous_hook = sys.excepthook
+        sys.excepthook = lambda kind, value, tb: finish(False, "".join(traceback.format_exception(kind, value, tb)))
         timer.timeout.connect(poll)
         window.show()
         timer.start(50)
         QTimer.singleShot(0, lambda: window.build("run"))
-        return app.exec()
+        try:
+            return app.exec()
+        finally:
+            sys.excepthook = previous_hook

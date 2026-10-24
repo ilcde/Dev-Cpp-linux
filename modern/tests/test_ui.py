@@ -131,6 +131,14 @@ def test_debugger_record_views(window):
     assert window.stack.topLevelItem(0).text(0) == "main"
 
 
+def test_terminal_preserves_argument_boundaries(app, tmp_path):
+    terminal = Terminal(tmp_path, command=[sys.executable, "-c", "import sys; print('ARGS_OK:' + sys.argv[1])", "value with spaces"])
+    try:
+        wait(app, lambda: "ARGS_OK:value with spaces" in "\n".join(terminal.screen.display), timeout=15)
+    finally:
+        terminal.shutdown()
+
+
 @pytest.mark.skipif(not shutil.which("g++"), reason="C++ toolchain unavailable")
 def test_ui_build_and_run_in_terminal(window, app, tmp_path):
     source = tmp_path / "main.cpp"

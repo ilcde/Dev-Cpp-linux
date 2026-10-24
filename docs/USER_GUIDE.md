@@ -18,7 +18,7 @@ Opening a folder does not execute its contents. The first build, Git operation o
 
 ## Terminal
 
-Open a shell with **Ctrl+`** or the terminal icon. Linux uses `$SHELL` (or `/bin/bash`); Windows uses PowerShell/ConPTY. Each tab has its own process. Closing a terminal terminates its process group/tree. The terminal supports ANSI colors, cursor movement, resizing and a limited scrollback history.
+Open a shell with **Ctrl+`** or the terminal icon. Linux uses `$SHELL` (or `/bin/bash`); Windows uses PowerShell with ConPTY in source runs and WinPTY in the packaged GUI. Each tab has its own process. Closing a terminal terminates its process group/tree. The terminal supports ANSI colors, cursor movement, resizing and a limited scrollback history.
 
 - `Ctrl+C`: interrupt the program.
 - `Ctrl+Shift+C`: copy the selection.

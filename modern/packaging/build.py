@@ -8,14 +8,20 @@ import importlib.metadata
 
 modern = Path(__file__).resolve().parents[1]
 env = dict(os.environ)
+binary_args = []
 if os.name == "nt":
+    import winpty
+    for helper in ("winpty-agent.exe", "OpenConsole.exe"):
+        path = Path(winpty.__file__).parent / helper
+        if path.is_file():
+            binary_args += ["--add-binary", str(path) + os.pathsep + "winpty"]
     # Native dependencies from unrelated apps (e.g. ICU from Poppler) can have
     # the same DLL names as Windows system libraries but incompatible exports.
     windows = Path(env.get("SystemRoot", r"C:\Windows"))
     env["PATH"] = os.pathsep.join([str(Path(sys.executable).parent), str(Path(sys.base_prefix)),
                                   str(windows / "System32"), str(windows)])
 subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed", "--onedir",
-                "--paths", str(modern), "--name", "DevCppModern",
+                "--paths", str(modern), "--name", "DevCppModern", *binary_args,
                 "--distpath", str(modern / "dist"), "--workpath", str(modern / "build"),
                 "--specpath", str(modern / "packaging"), str(modern / "packaging" / "entry.py")],
                env=env, check=True)

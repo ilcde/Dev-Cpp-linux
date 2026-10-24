@@ -6,6 +6,8 @@ Keep the executable, `_internal/` and all other archive contents together. Do no
 
 On Windows, a Qt DLL error often means an incomplete extraction or conflicting DLLs copied into the app directory. Re-extract a clean release. When building locally, use `packaging/build.py`, which collects dependencies with a clean PATH.
 
+Keep `_internal/winpty/winpty-agent.exe` in the extracted Windows bundle: the packaged terminal needs this helper. The release uses WinPTY to avoid a ConPTY initialization failure in windowed frozen applications; this is validated by running a compiled program inside the packaged terminal, not just opening the IDE.
+
 ## Fedora Wayland or xcb errors
 
 Launch as the logged-in desktop user, not root. A Wayland session needs valid `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR`; X11 needs `DISPLAY`. Try `QT_QPA_PLATFORM=xcb` only when XWayland/X11 is available. For xcb plugin errors, ensure `libxkbcommon-x11` and the `xcb-util-*` packages from the installation guide are installed. Headless SSH sessions need a display server; the app is a desktop GUI.
