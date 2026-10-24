@@ -19,6 +19,10 @@ def run(app):
         window.open_file(root / "main.cpp")
         window.trusted = True
         stage = ["build"]
+        build_complete = [False]
+        # Window.built is connected first. Wait for it to finish constructing
+        # ConPTY widgets; Windows may pump events reentrantly during that step.
+        window.build_job.finished.connect(lambda *_: build_complete.__setitem__(0, True))
         stopped, stack, debug_output = [], [], []
         window.debugger.stopped.connect(stopped.append)
         window.debugger.stack.connect(stack.append)
@@ -36,7 +40,7 @@ def run(app):
         def poll():
             if time.monotonic() - started > 45:
                 finish(False, "Timed out at " + stage[0])
-            elif stage[0] == "build" and not window.build_job.active:
+            elif stage[0] == "build" and build_complete[0]:
                 if not window.run_terminal:
                     finish(False, "Build did not start program")
                 elif "DEVCPP_INTEGRATION_OK" in "\n".join(window.run_terminal.screen.display):
