@@ -71,4 +71,4 @@ Artifacts are written to `modern/release/` with platform-specific filenames and 
 4. Require both jobs to succeed, including packaged startup checks. Download the two archive artifacts from that exact workflow run.
 5. Create a release tag on that same commit, attach both archives and both SHA256 files, and include tested scope and limitations in the notes.
 
-Version 0.2.0 is published as a pre-release because legacy feature migration is incomplete. Do not label a build as Fedora-tested if its Fedora job failed or was skipped. CI uses a container and virtual display servers; a real GNOME session remains useful for manual graphics, multimedia and accessibility testing.
+Version 0.2.1 is published as a pre-release because legacy feature migration is incomplete. Do not label a build as Fedora-tested if its Fedora job failed or was skipped. CI uses a container and virtual display servers; a real GNOME session remains useful for manual graphics, multimedia and accessibility testing.

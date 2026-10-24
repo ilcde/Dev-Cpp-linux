@@ -139,6 +139,27 @@ def test_terminal_preserves_argument_boundaries(app, tmp_path):
         terminal.shutdown()
 
 
+@pytest.mark.parametrize("code", [0, 7])
+def test_terminal_exit_preserves_output_and_reports_status(app, tmp_path, code):
+    terminal = Terminal(tmp_path, command=[sys.executable, "-c", f"print('FINAL_OUTPUT', flush=True); raise SystemExit({code})"])
+    try:
+        wait(app, lambda: terminal.finished, timeout=15)
+        text = "\n".join(terminal.screen.display)
+        assert "FINAL_OUTPUT" in text
+        assert f"Process exited with code {code}." in text
+        assert "Pty is closed" not in text
+        terminal.resize(450, 120)
+        terminal.show()
+        app.processEvents()
+        assert not terminal.grab().isNull()
+        assert "FINAL_OUTPUT" in terminal.toPlainText()
+        assert f"Process exited with code {code}." in terminal.toPlainText()
+        terminal.write("ignored after exit")
+        assert "\n".join(terminal.screen.display) == text
+    finally:
+        terminal.shutdown()
+
+
 @pytest.mark.skipif(not shutil.which("g++"), reason="C++ toolchain unavailable")
 def test_ui_build_and_run_in_terminal(window, app, tmp_path):
     source = tmp_path / "main.cpp"

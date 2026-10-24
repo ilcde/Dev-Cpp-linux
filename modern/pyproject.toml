@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "devcpp-modern"
-version = "0.2.0"
+version = "0.2.1"
 description = "Native Qt C/C++ workbench for Windows and Linux"
 requires-python = ">=3.11"
 license = "GPL-2.0-or-later"
@@ -27,6 +27,9 @@ devcpp-modern = "devcpp.app:main"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["devcpp*"]
+
+[tool.setuptools.package-data]
+devcpp = ["assets/*", "assets/templates/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

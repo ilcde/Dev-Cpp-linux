@@ -4,7 +4,16 @@ import threading
 from pathlib import Path
 from PySide6.QtCore import QObject, Signal, Qt, QUrl
 from PySide6.QtGui import QColor, QPainter, QPixmap
-from PySide6.QtWidgets import QWidget
+from PySide6.QtWidgets import QWidget, QTabWidget
+
+
+class PanelTabs(QTabWidget):
+    """Paint the unused tab strip too; wallpaper belongs below the chrome."""
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.fillRect(0, 0, self.width(), self.tabBar().height(), QColor("#292a2e"))
+        painter.end()
+        super().paintEvent(event)
 from PySide6.QtMultimedia import QMediaPlayer, QVideoSink
 
 
@@ -114,7 +123,26 @@ QPlainTextEdit, QTextEdit, QTreeView, QListWidget, QTreeWidget { background: rgb
 QTreeView { padding: 8px 4px; }
 QTreeView::item { height: 25px; }
 QLineEdit, QComboBox, QSpinBox { background: #25262a; border: 1px solid #484b52; border-radius: 3px; padding: 5px; }
+QPlainTextEdit#configList { background: #25262a; border: 1px solid #484b52; border-radius: 3px; padding: 5px; }
+QCheckBox::indicator { width: 14px; height: 14px; border: 1px solid #69707a; border-radius: 2px; background: #25262a; }
+QCheckBox::indicator:checked { background: #83bdb2; border: 3px solid #434d4b; }
+QSpinBox::up-button, QSpinBox::down-button { width: 20px; background: #34363b; border: 0; }
+QComboBox::drop-down { width: 22px; border: 0; }
 QTabWidget::pane { border: 0; border-top: 1px solid #37393e; background: transparent; }
+QTabWidget#toolPanels::pane, QTabWidget#sidebar::pane { background: #202124; }
+QWidget#toolPanel { background: #202124; }
+QTabWidget { background: #292a2e; }
+QTabWidget#editorTabs { background: transparent; }
+QTabBar { background: #292a2e; }
+QTextEdit#terminal, QPlainTextEdit { background: #202124; }
+QPlainTextEdit#codeEditor { background: rgba(32,33,36,215); }
+QScrollArea, QScrollArea > QWidget > QWidget { background: #202124; }
+QToolButton:pressed, QPushButton:pressed { background: #50545c; }
+QToolButton:focus, QPushButton:focus, QLineEdit:focus, QComboBox:focus { border: 1px solid #83bdb2; }
+QToolTip { color: #eef0f3; background: #34363b; border: 1px solid #494c53; padding: 5px; }
+QScrollBar:horizontal { background: #202124; height: 10px; }
+QScrollBar::handle:horizontal { background: #4b4d53; min-width: 25px; border-radius: 3px; }
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
 QTabBar::tab { background: #292a2e; padding: 8px 12px; color: #969ca6; border-right: 1px solid #202124; }
 QTabBar::tab:selected { background: #202124; color: #eef0f3; border-top: 2px solid #83bdb2; padding-top: 6px; }
 QHeaderView::section { background: #292a2e; color: #b1b7c0; border: 0; padding: 5px; }

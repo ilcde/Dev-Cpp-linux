@@ -4,6 +4,6 @@ Name=Dev-C++ Modern
 Comment=Native C and C++ development environment
 Comment[vi]=Môi trường lập trình C và C++
 Exec=devcpp-modern
-Icon=applications-development
+Icon=devcpp
 Terminal=false
 Categories=Development;IDE;

@@ -39,6 +39,8 @@ class ProjectDialog(QDialog):
                 widget.setToolTip("C++26 support is experimental in GCC. C++29 requires GCC 17 development builds. Feature availability depends on your compiler and standard library.")
             elif isinstance(value, list):
                 widget = QPlainTextEdit("\n".join(value))
+                widget.setObjectName("configList")
+                widget.setPlaceholderText("Mỗi dòng một giá trị" if vi else "One value per line")
                 widget.setMaximumHeight(75)
             elif isinstance(value, bool):
                 widget = QCheckBox()
@@ -50,6 +52,9 @@ class ProjectDialog(QDialog):
         scroll.setWidget(body)
         outer.addWidget(scroll)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        if vi:
+            buttons.button(QDialogButtonBox.StandardButton.Save).setText("Lưu")
+            buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Hủy")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         outer.addWidget(buttons)
@@ -102,6 +107,9 @@ class SettingsDialog(QDialog):
         hint.setWordWrap(True)
         form.addRow(hint)
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Save | QDialogButtonBox.StandardButton.Cancel)
+        if vi:
+            buttons.button(QDialogButtonBox.StandardButton.Save).setText("Lưu")
+            buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Hủy")
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         form.addRow(buttons)

@@ -4,7 +4,7 @@
 
 This repository is **ilcde/Dev-Cpp-linux**, a fork of **[Embarcadero/Dev-Cpp](https://github.com/Embarcadero/Dev-Cpp)**. That project continues the work of **Orwell Dev-C++** and **Bloodshed Dev-C++**. The upstream Delphi/VCL sources, resources, translations, notices and history are preserved. The [upstream README](UPSTREAM_README.md) is retained for reference.
 
-The independently developed Qt workbench is under `modern/`. It does not imply endorsement by Embarcadero, Orwell or Bloodshed. New line icons in `modern/devcpp/icons.py` are original project assets, distributed under the same GPL terms as the workbench.
+The Qt workbench is under `modern/`. It does not imply endorsement by Embarcadero, Orwell or Bloodshed. The application icon is the original root `devcpp.ico`; the bundled console template manifests and source files are unmodified copies from upstream `Templates/`. Their original notices and project license remain applicable. `modern/devcpp/legacy.py` implements compatibility with the project fields read by `Source/project.pas`; it does not reuse the VCL runtime. New line icons in `modern/devcpp/icons.py` are project assets distributed under the same GPL terms.
 
 ## Project license
 

@@ -1,4 +1,5 @@
 modern/** text eol=lf
+modern/devcpp/assets/*.ico binary
 docs/** text eol=lf
 docs/assets/*.png binary
 .github/**/*.yml text eol=lf

@@ -30,6 +30,7 @@ class Terminal(QTextEdit):
         self.ended.connect(self.on_end)
         self.pty = None
         self.closing = False
+        self.finished = False
         self.dirty = False
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.render)
@@ -53,6 +54,7 @@ class Terminal(QTextEdit):
             self.on_end(str(exc))
 
     def read_loop(self):
+        error = ""
         try:
             while not self.closing:
                 text = self.pty.read(8192)
@@ -60,19 +62,39 @@ class Terminal(QTextEdit):
                     self.received.emit(text)
                 elif not self.pty.isalive():
                     break
-        except (EOFError, OSError) as exc:
-            if not self.closing:
-                self.ended.emit(str(exc))
+        except EOFError:
+            pass  # End of a process is not a terminal failure.
+        except OSError as exc:
+            error = str(exc)
+        if not self.closing:
+            self.ended.emit(error)
 
     def on_end(self, message):
-        self.feed("\r\n[Terminal đã kết thúc / exited] " + message + "\r\n")
+        if self.finished:
+            return
+        self.finished = True
+        code = None
+        if self.pty:
+            try:
+                self.pty.isalive()  # Refresh POSIX exitstatus without blocking Qt.
+                code = self.pty.exitstatus
+            except (EOFError, OSError):
+                pass
+        if message:
+            status = "Terminal error: " + message
+        elif code is not None:
+            status = f"Process exited with code {code}."
+        else:
+            status = "Process finished."
+        self.feed("\r\n[" + status + "]\r\n")
+        self.render()
 
     def feed(self, text):
         self.stream.feed(text)
         self.dirty = True
 
     def write(self, text):
-        if self.pty and not self.closing:
+        if self.pty and not self.closing and not self.finished:
             try:
                 self.pty.write(text)
             except (EOFError, OSError) as exc:
@@ -106,6 +128,9 @@ class Terminal(QTextEdit):
                 style = f"color:{fg};background-color:{bg};" + ("font-weight:bold;" if char.bold else "")
                 row.append(f'<span style="{style}">{html.escape(char.data)}</span>')
             rows.append("".join(row))
+        if self.finished:
+            last = max((i for i, line in enumerate(self.screen.display) if line.strip()), default=0)
+            rows = rows[:last + 1]
         self.setHtml('<pre style="margin:0;">' + "\n".join(rows) + "</pre>")
 
     def resizeEvent(self, event):
@@ -115,11 +140,20 @@ class Terminal(QTextEdit):
         metrics = self.fontMetrics()
         cols = max(20, (self.viewport().width() - 12) // max(1, metrics.horizontalAdvance("M")))
         rows = max(4, (self.viewport().height() - 12) // metrics.lineSpacing())
-        self.screen.resize(rows, cols)
-        if self.pty:
+        if not self.finished:
+            # pyte normally clips from the top even if the bottom is empty.
+            # A newly revealed small terminal must keep its initial output.
+            if rows < self.screen.lines and self.screen.cursor.y < rows:
+                for y in range(rows, self.screen.lines):
+                    self.screen.buffer.pop(y, None)
+                self.screen.lines = rows
+            self.screen.resize(rows, cols)
+        if self.pty and not self.finished and not self.closing:
             try:
                 self.pty.setwinsize(rows, cols)
-            except OSError:
+            except Exception:
+                # WinptyError is not an OSError. A short-lived process can exit
+                # between the GUI resize and the reader's queued EOF signal.
                 pass
         self.dirty = True
 

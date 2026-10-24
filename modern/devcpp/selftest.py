@@ -7,9 +7,13 @@ import traceback
 from PySide6.QtCore import QSettings, QTimer
 from .app import Window
 from .core import Project
+from .icons import application_icon
+from .legacy import template_catalog
 
 
 def run(app):
+    if application_icon().isNull() or len(template_catalog()) != 3:
+        raise RuntimeError("Missing original Dev-C++ icon or templates in package")
     with tempfile.TemporaryDirectory(prefix="devcpp-selftest-") as temporary:
         root = Path(temporary)
         (root / "helper.c").write_text("constexpr int value = 42;\nint answer(void) { return value; }\n")
@@ -50,7 +54,10 @@ def run(app):
             elif stage[0] == "build" and build_complete[0]:
                 if not window.run_terminal:
                     finish(False, "Build did not start program")
-                elif "DEVCPP_INTEGRATION_OK" in "\n".join(window.run_terminal.screen.display):
+                elif window.run_terminal.finished and "DEVCPP_INTEGRATION_OK" in "\n".join(window.run_terminal.screen.display):
+                    if "Process exited with code 0." not in "\n".join(window.run_terminal.screen.display):
+                        finish(False, "Packaged terminal did not report exit code 0")
+                        return
                     stage[0] = "debug"
                     window.debugger.start("gdb", project.output(root), root, [], [])
             elif stage[0] == "debug" and stopped and stack:

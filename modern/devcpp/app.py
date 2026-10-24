@@ -16,10 +16,11 @@ from .jobs import Job
 from .editor import Editor
 from .terminal import Terminal
 from .debugger import Debugger
-from .appearance import Background, Presence, STYLE
+from .appearance import Background, Presence, STYLE, PanelTabs
 from .dialogs import ProjectDialog, SettingsDialog
-from .icons import icon
+from .icons import icon, application_icon
 from .runtime import prepare_runtime
+from .legacy import import_project, template_catalog, create_project
 
 
 class Window(QMainWindow):
@@ -36,6 +37,7 @@ class Window(QMainWindow):
         self.resize(1280, 820)
         self.setMinimumSize(950, 640)
         self.setWindowTitle("Dev-C++ Modern • " + self.root.name)
+        self.setWindowIcon(application_icon())
         self.background = Background()
         self.setCentralWidget(self.background)
         layout = QVBoxLayout(self.background)
@@ -45,7 +47,8 @@ class Window(QMainWindow):
         self.workspace_label.setObjectName("muted")
         self.main_split = QSplitter(Qt.Orientation.Horizontal)
         layout.addWidget(self.main_split, 1)
-        self.sidebar = QTabWidget()
+        self.sidebar = PanelTabs()
+        self.sidebar.setObjectName("sidebar")
         self.main_split.addWidget(self.sidebar)
         self.files = QTreeView()
         self.model = QFileSystemModel(self)
@@ -59,29 +62,35 @@ class Window(QMainWindow):
         self.create_git_panel()
         self.work_split = QSplitter(Qt.Orientation.Vertical)
         self.main_split.addWidget(self.work_split)
-        self.editors = QTabWidget()
+        self.editors = PanelTabs()
+        self.editors.setObjectName("editorTabs")
         self.editors.setTabsClosable(False)
         self.editors.setDocumentMode(True)
         self.editors.setMovable(True)
         self.editors.tabCloseRequested.connect(self.close_tab)
         self.work_split.addWidget(self.editors)
-        self.panels = QTabWidget()
+        self.panels = PanelTabs()
+        self.panels.setObjectName("toolPanels")
         self.work_split.addWidget(self.panels)
         self.output = QPlainTextEdit()
         self.output.setReadOnly(True)
         self.output.document().setMaximumBlockCount(10000)
         self.panels.addTab(self.output, icon("build"), self.t("Biên dịch", "Build"))
-        self.terminals = QTabWidget()
-        self.terminals.setTabsClosable(True)
+        self.terminals = PanelTabs()
+        self.terminals.setTabsClosable(False)
+        self.terminals.setDocumentMode(True)
+        for tabs in (self.sidebar, self.editors, self.panels, self.terminals):
+            tabs.tabBar().setDrawBase(False)
         self.terminals.tabCloseRequested.connect(self.close_terminal)
         terminal_panel = QWidget()
+        terminal_panel.setObjectName("toolPanel")
         terminal_layout = QVBoxLayout(terminal_panel)
         terminal_layout.setContentsMargins(0, 0, 0, 0)
-        new_terminal = QPushButton(self.t("+ Terminal mới", "+ New terminal"))
-        new_terminal.setIcon(icon("terminal"))
-        new_terminal.setMaximumWidth(180)
+        new_terminal = QToolButton()
+        new_terminal.setIcon(icon("plus"))
+        new_terminal.setToolTip(self.t("Terminal mới (Ctrl+`)", "New terminal (Ctrl+`)"))
         new_terminal.clicked.connect(self.new_terminal)
-        terminal_layout.addWidget(new_terminal)
+        self.terminals.setCornerWidget(new_terminal)
         terminal_layout.addWidget(self.terminals)
         self.panels.addTab(terminal_panel, icon("terminal"), "Terminal")
         self.create_debug_panel()
@@ -126,6 +135,8 @@ class Window(QMainWindow):
     def actions(self):
         file = self.menuBar().addMenu(self.t("Tệp", "File"))
         new_action = self.action(file, self.t("Tệp mới", "New file"), self.new_file, "Ctrl+N", "file")
+        self.action(file, self.t("Dự án từ template gốc…", "New project from upstream template…"), self.new_project, symbol="folder")
+        self.action(file, self.t("Nhập dự án Dev-C++ (.dev)…", "Import Dev-C++ project (.dev)…"), self.import_dev, symbol="folder")
         self.action(file, self.t("Mở tệp…", "Open file…"), self.open_dialog, "Ctrl+O")
         folder_action = self.action(file, self.t("Mở thư mục…", "Open folder…"), self.choose_workspace, "Ctrl+Shift+O", "folder")
         save_action = self.action(file, self.t("Lưu", "Save"), self.save_current, "Ctrl+S", "save")
@@ -151,7 +162,10 @@ class Window(QMainWindow):
                                             ("Chạy", "Run", lambda: self.build("run"), "F6"),
                                             ("Debug", "Debug", lambda: self.build("debug"), "F5"),
                                             ("Dừng", "Stop", self.stop, "Shift+F5")]:
-            toolbar.addAction(self.action(project, self.t(vi, en), callback, shortcut, en.lower()))
+            action = self.action(project, self.t(vi, en), callback, shortcut, en.lower())
+            toolbar.addAction(action)
+            if en in ("Build", "Run", "Debug"):
+                toolbar.widgetForAction(action).setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         toolbar.addSeparator()
         toolbar.addAction(self.action(project, self.t("Terminal mới", "New terminal"), self.new_terminal, "Ctrl+`", "terminal"))
         spacer = QWidget()
@@ -164,6 +178,7 @@ class Window(QMainWindow):
 
     def create_git_panel(self):
         panel = QWidget()
+        panel.setObjectName("toolPanel")
         layout = QVBoxLayout(panel)
         self.git_list = QListWidget()
         self.git_list.setSelectionMode(QListWidget.SelectionMode.ExtendedSelection)
@@ -171,12 +186,14 @@ class Window(QMainWindow):
         for vi, en, callback in [("Làm mới", "Refresh", self.refresh_git), ("Xem diff", "View diff", self.git_diff),
                                   ("Stage mục đã chọn", "Stage selected", self.git_stage), ("Bỏ stage mục đã chọn", "Unstage selected", self.git_unstage)]:
             button = QPushButton(self.t(vi, en))
+            button.setIcon(icon({"Refresh": "refresh", "View diff": "file", "Stage selected": "plus", "Unstage selected": "close"}[en]))
             button.clicked.connect(callback)
             layout.addWidget(button)
         self.commit_message = QLineEdit()
         self.commit_message.setPlaceholderText(self.t("Nội dung commit", "Commit message"))
         layout.addWidget(self.commit_message)
         commit = QPushButton("Commit")
+        commit.setIcon(icon("git"))
         commit.clicked.connect(self.git_commit)
         layout.addWidget(commit)
         self.sidebar.addTab(panel, icon("git"), "Git")
@@ -184,6 +201,7 @@ class Window(QMainWindow):
 
     def create_debug_panel(self):
         panel = QWidget()
+        panel.setObjectName("toolPanel")
         layout = QVBoxLayout(panel)
         buttons = QHBoxLayout()
         for vi, en, cmd in [("Tiếp tục", "Continue", "-exec-continue"), ("Bước qua", "Step over", "-exec-next"),
@@ -311,11 +329,15 @@ class Window(QMainWindow):
 
     def choose_workspace(self):
         path = QFileDialog.getExistingDirectory(self, self.t("Mở thư mục", "Open folder"), str(self.root))
-        if not path or Path(path).resolve() == self.root:
-            return
+        if path:
+            self.open_workspace(Path(path))
+
+    def open_workspace(self, path):
+        if path.resolve() == self.root:
+            return True
         for index in range(self.editors.count()):
             if not self.may_close(self.editors.widget(index)):
-                return
+                return False
         self.stop()
         self.git_job.stop()
         while self.terminals.count():
@@ -325,6 +347,56 @@ class Window(QMainWindow):
             self.editors.removeTab(0)
             editor.deleteLater()
         self.set_workspace(Path(path))
+        return True
+
+    def new_project(self):
+        catalog = template_catalog()
+        name, ok = QInputDialog.getItem(self, self.t("Template Dev-C++ gốc", "Original Dev-C++ templates"),
+                                      self.t("Dự án console", "Console project"), [name for _, name in catalog], 0, False)
+        if not ok:
+            return
+        language, ok = QInputDialog.getItem(self, "C / C++", self.t("Ngôn ngữ", "Language"), ["C++", "C"], 0, False)
+        if not ok:
+            return
+        parent = QFileDialog.getExistingDirectory(self, self.t("Thư mục chứa dự án", "Parent folder"), str(self.root))
+        if not parent:
+            return
+        folder, ok = QInputDialog.getText(self, self.t("Dự án mới", "New project"), self.t("Tên thư mục mới", "New folder name"))
+        if not ok or not folder.strip():
+            return
+        if folder in (".", "..") or any(char in folder for char in '/\\:'):
+            self.error(self.t("Tên thư mục không hợp lệ", "Invalid folder name"))
+            return
+        try:
+            template = next(path for path, title in catalog if title == name)
+            source = create_project(template, Path(parent) / folder, cpp=language == "C++")
+            if self.open_workspace(source.parent):
+                self.open_file(source)
+        except (OSError, ValueError) as exc:
+            self.error(str(exc))
+
+    def import_dev(self):
+        path, _ = QFileDialog.getOpenFileName(self, self.t("Nhập dự án gốc", "Import upstream project"), str(self.root), "Dev-C++ (*.dev)")
+        if not path:
+            return
+        from configparser import Error as IniError
+        path = Path(path)
+        try:
+            if (path.parent / "devcpp.json").exists():
+                raise ValueError(self.t("devcpp.json đã tồn tại; không ghi đè cấu hình hiện tại.", "devcpp.json already exists; existing settings will not be overwritten."))
+            project, warnings = import_project(path)
+            review = self.t("Giữ nguyên file .dev. Tạo devcpp.json với các file sau:\n", "Keep the .dev file unchanged. Create devcpp.json with these sources:\n")
+            review += "\n".join(project.sources) + "\n\n" + "\n".join(warnings)
+            if QMessageBox.question(self, self.t("Kiểm tra cấu hình nhập", "Review import"), review,
+                                    QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel) != QMessageBox.StandardButton.Ok:
+                return
+            if self.open_workspace(path.parent):
+                project.save(path.parent)
+                self.project = project
+                for source in project.sources:
+                    self.open_file(path.parent / source)
+        except (OSError, ValueError, KeyError, IniError) as exc:
+            self.error(str(exc))
 
     def set_workspace(self, root):
         self.root = root.resolve()
@@ -396,7 +468,7 @@ class Window(QMainWindow):
             return
         if after == "run":
             terminal = Terminal(self.root, command=[str(executable), *self.project.arguments])
-            self.terminals.addTab(terminal, self.t("Chương trình", "Program"))
+            self.add_terminal(terminal, self.t("Chương trình", "Program"))
             self.terminals.setCurrentWidget(terminal)
             self.run_terminal = terminal
             self.panels.setCurrentIndex(1)
@@ -426,11 +498,20 @@ class Window(QMainWindow):
         if not self.trust():
             return None
         terminal = Terminal(self.root)
-        self.terminals.addTab(terminal, f"Shell {self.terminals.count() + 1}")
+        self.add_terminal(terminal, f"Shell {self.terminals.count() + 1}")
         self.terminals.setCurrentWidget(terminal)
         self.panels.setCurrentIndex(1)
         terminal.setFocus()
         return terminal
+
+    def add_terminal(self, terminal, title):
+        index = self.terminals.addTab(terminal, icon("terminal"), title)
+        close = QToolButton()
+        close.setIcon(icon("close"))
+        close.setFixedSize(20, 20)
+        close.setToolTip(self.t("Đóng terminal", "Close terminal"))
+        close.clicked.connect(lambda: self.close_terminal(self.terminals.indexOf(terminal)))
+        self.terminals.tabBar().setTabButton(index, QTabBar.ButtonPosition.RightSide, close)
 
     def close_terminal(self, index):
         terminal = self.terminals.widget(index)
@@ -621,6 +702,10 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setStyleSheet(STYLE)
+    app.setWindowIcon(application_icon())
+    if os.name == "nt":
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("ilcde.DevCpp.Modern")
     prepare_runtime()
     if args.self_test:
         from .selftest import run

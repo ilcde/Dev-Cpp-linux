@@ -21,6 +21,8 @@ if os.name == "nt":
     env["PATH"] = os.pathsep.join([str(Path(sys.executable).parent), str(Path(sys.base_prefix)),
                                   str(windows / "System32"), str(windows)])
 subprocess.run([sys.executable, "-m", "PyInstaller", "--noconfirm", "--clean", "--windowed", "--onedir",
+                "--icon", str(modern / "devcpp/assets/devcpp.ico"),
+                "--add-data", str(modern / "devcpp/assets") + os.pathsep + "devcpp/assets",
                 "--paths", str(modern), "--name", "DevCppModern", *binary_args,
                 "--distpath", str(modern / "dist"), "--workpath", str(modern / "build"),
                 "--specpath", str(modern / "packaging"), str(modern / "packaging" / "entry.py")],

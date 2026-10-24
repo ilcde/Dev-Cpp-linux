@@ -28,6 +28,11 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
       - run: python modern/packaging/build.py
+      - run: python modern/packaging/audit-ui.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-ui-audit
+          path: modern/ci-artifacts/ui-audit/*.png
       - name: Packaged Windows executable
         shell: pwsh
         run: |
@@ -66,6 +71,11 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
       - run: python3 modern/packaging/build.py
+      - run: python3 modern/packaging/audit-ui.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fedora-ui-audit
+          path: modern/ci-artifacts/ui-audit/*.png
       - name: Packaged binary under X11
         run: xvfb-run -a env QT_QPA_PLATFORM=xcb modern/dist/DevCppModern/DevCppModern --self-test
       - name: Packaged binary under Wayland

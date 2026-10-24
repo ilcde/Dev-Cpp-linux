@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — 2026-10-25
+
+- Keep custom backgrounds in the editor, with opaque tool panels and full-width tab strips; use consistent close controls, labeled build actions and bordered settings fields.
+- Restore the original Dev-C++ application icon in window/taskbar, Windows EXE and Linux desktop launcher.
+- Preserve terminal output after short programs finish; report exit codes instead of raw EOF errors. Avoid invalid WinPTY handles during resize after exit.
+- Import console `.dev` source membership and search paths with a compatibility review; preserve the original project file.
+- Offer three original console templates in C and C++, including interactive input examples.
+- Add terminal exit/resize regression tests, upstream asset identity checks, import tests and a bilingual visual audit.
+
 ## 0.2.0 — 2026-10-24
 
 First public development release of the Qt workbench in ilcde's Dev-C++ fork.

@@ -21,6 +21,10 @@ shutil.copytree(modern / "examples", app / "examples", dirs_exist_ok=True,
 for name in ("LICENSE", "COPYING.txt", "README.md"):
     shutil.copy2(modern.parent / name, app / name)
 if platform.startswith("fedora"):
+    from PySide6.QtGui import QImage
+    image = QImage(str(modern / "devcpp/assets/devcpp.ico"))
+    if not image.save(str(app / "devcpp.png")):
+        raise SystemExit("Cannot export original Dev-C++ launcher icon")
     for name in ("devcpp-modern", "install-desktop.sh"):
         shutil.copy2(modern / "packaging" / name, app / name)
         (app / name).chmod(0o755)

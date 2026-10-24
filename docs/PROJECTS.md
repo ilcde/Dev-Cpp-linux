@@ -1,5 +1,15 @@
 # Projects, standards and libraries
 
+## Original Dev-C++ projects
+
+Use **File → Import Dev-C++ project (.dev)** (Vietnamese: **Tệp → Nhập dự án Dev-C++ (.dev)**). The importer reads the INI fields used by upstream `Source/project.pas`, previews sources and compatibility warnings, and creates a separate `devcpp.json`. It never rewrites the original `.dev` file or replaces an existing `devcpp.json`.
+
+Console projects are supported. Enabled C/C++ units, include directories and library search directories are imported; Windows path separators are normalized. Headers remain available through the file explorer. UTF-8 and BOM-marked UTF-16 project files are accepted; convert older ANSI project files to UTF-8 before importing. The compiler defaults to C23/C++26. Review flags, libraries, executable paths and language overrides before building. Legacy compiler-setting indices, per-unit build commands, object files, resource scripts and command-line settings are reported for manual review rather than executed. GUI, DLL, static-library and custom-Makefile builds need an explicit CMake configuration.
+
+**File → New project from upstream template** creates a new folder using original Console Application, Hello World or Input Loop templates and source text from `Templates/`. Choose C or C++, a parent folder and a new folder name. Existing folders are never overwritten. The upstream Input Loop manifest names its C++ source `main.c`; the frontend corrects only that destination extension to `.cpp`. Windows-specific templates are not offered as portable projects.
+
+## Qt project configuration
+
 The project file is `devcpp.json` in the workspace root. The settings dialog writes it as UTF-8. Paths are relative to that directory unless absolute. Lists use **one argument per line** in the UI; do not put shell quotes around paths containing spaces.
 
 ## Language standards

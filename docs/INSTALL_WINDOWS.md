@@ -2,8 +2,8 @@
 
 ## Release executable (x64)
 
-1. Download `DevCppModern-0.2.0-windows-x86_64.zip` and its `.sha256` file from Releases.
-2. Compare the hash with `Get-FileHash .\DevCppModern-0.2.0-windows-x86_64.zip -Algorithm SHA256`.
+1. Download `DevCppModern-0.2.1-windows-x86_64.zip` and its `.sha256` file from Releases.
+2. Compare the hash with `Get-FileHash .\DevCppModern-0.2.1-windows-x86_64.zip -Algorithm SHA256`.
 3. Extract the **entire archive** to a writable folder.
 4. Run `DevCppModern\DevCppModern.exe`. Keep `_internal/` alongside it.
 

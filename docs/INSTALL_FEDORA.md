@@ -17,8 +17,8 @@ sudo dnf install gcc gcc-c++ gdb git cmake ninja-build \
 2. Download the Fedora archive and its `.sha256` file from the same GitHub release. Verify and extract:
 
 ```sh
-sha256sum -c DevCppModern-0.2.0-fedora44-x86_64.tar.gz.sha256
-tar -xzf DevCppModern-0.2.0-fedora44-x86_64.tar.gz
+sha256sum -c DevCppModern-0.2.1-fedora44-x86_64.tar.gz.sha256
+tar -xzf DevCppModern-0.2.1-fedora44-x86_64.tar.gz
 ./DevCppModern/devcpp-modern "$HOME/Projects/my-project"
 ```
 

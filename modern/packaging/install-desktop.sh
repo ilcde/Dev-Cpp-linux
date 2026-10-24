@@ -10,7 +10,7 @@ Type=Application
 Name=Dev-C++ Modern
 Comment=C23 and C++ development environment
 Exec="$escaped/devcpp-modern"
-Icon=applications-development
+Icon=$app_dir/devcpp.png
 Terminal=false
 Categories=Development;IDE;
 EOF

@@ -2,6 +2,12 @@
 from PySide6.QtCore import QByteArray, Qt
 from PySide6.QtGui import QIcon, QPixmap, QPainter
 from PySide6.QtSvg import QSvgRenderer
+from pathlib import Path
+
+
+def application_icon():
+    """Keep the original Dev-C++ identity in the native port."""
+    return QIcon(str(Path(__file__).parent / "assets" / "devcpp.ico"))
 
 PATHS = {
     "file": '<path d="M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6"/>',

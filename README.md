@@ -17,15 +17,16 @@ Get the platform-specific archive from **[Releases](https://github.com/ilcde/Dev
 
 | Platform | Archive | Start here |
 | --- | --- | --- |
-| Windows 11 x64 | `DevCppModern-0.2.0-windows-x86_64.zip` | Extract everything, open `DevCppModern.exe` |
-| Fedora Workstation 44 x64 | `DevCppModern-0.2.0-fedora44-x86_64.tar.gz` | Extract, run `./DevCppModern/devcpp-modern` |
+| Windows 11 x64 | `DevCppModern-0.2.1-windows-x86_64.zip` | Extract everything, open `DevCppModern.exe` |
+| Fedora Workstation 44 x64 | `DevCppModern-0.2.1-fedora44-x86_64.tar.gz` | Extract, run `./DevCppModern/devcpp-modern` |
 
 The app bundles Python and Qt. **GCC/G++, GDB, Git and CMake are external tools**; install them using the [Windows](docs/INSTALL_WINDOWS.md) or [Fedora](docs/INSTALL_FEDORA.md) guide. Keep `_internal/` alongside the executable. SHA256 files are included with releases.
 
 ## What is included
 
 - Vietnamese UI by default, with an English option.
-- Compact native UI, original line icons, editor tabs, syntax highlighting and line numbers.
+- Compact native UI with the upstream Dev-C++ application icon, consistent toolbar/tab icons, syntax highlighting and line numbers.
+- Import console `.dev` projects and create C/C++ projects from original Dev-C++ templates.
 - **C23 and C++26** as the defaults for new projects. C++23 and older dialects remain selectable.
 - Multi-file C/C++ builds, custom include/library paths, linker flags and CMake projects.
 - Embedded PTY/ConPTY terminals with multiple tabs and ANSI colors.
@@ -64,7 +65,7 @@ On Windows, use `py -3` instead of `python3`, and `.venv\Scripts\python.exe` / `
 
 ## Status
 
-Version **0.2.0 is an early development release**. The Qt app is a separate implementation; it does not yet import legacy `.dev` projects or replace every feature of the VCL IDE. There is no clangd completion, integrated debugger stdin, or GUI package installer yet. Existing C/C++ sources can be opened as a folder and configured with `devcpp.json` or CMake.
+Version **0.2.1 is an early development release**. The Qt frontend remains a separate implementation, with explicit upstream integration: original icons and console templates, plus `.dev` source/path import based on `Source/project.pas`. This does not mean the VCL compiler/editor code has been ported. Review [import compatibility](docs/PROJECTS.md#original-dev-c-projects): Win32 resources, custom build commands and compiler option indices require manual migration. There is no clangd completion, integrated debugger stdin, or GUI package installer yet.
 
 CI builds and tests on Windows and in a **Fedora 44 container**, including real GCC/GDB/Git/terminal integration tests and packaged-app startup under X11 and headless Wayland. Check the linked workflow for the result associated with each release commit. These checks cannot guarantee every GPU, multimedia codec or Discord installation behaves identically.
 

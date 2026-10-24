@@ -38,9 +38,9 @@ Check the local path and read the Build panel for decoder errors. Try a WebM vid
 
 Use the Application ID, not a bot token. Open the Discord desktop app and enable RPC in Personalization. Sandboxed Discord installs can hide the IPC socket. The editor remains usable without Discord; disable RPC to stop connection attempts.
 
-## Known limits in 0.2.0
+## Known limits in 0.2.1
 
-- No automatic import of legacy `.dev` projects, DevPak integration or Delphi resource editor.
+- Console `.dev` import covers source membership and include/library search paths. Custom commands, legacy compiler indices and Win32 resources require manual migration. No DevPak integration or Delphi resource editor.
 - No clangd/LSP completion, refactoring, LLDB/DAP or remote debugging.
 - Debugger stdin is not integrated; Run supports interactive input through the terminal.
 - Breakpoints are synchronized at debug startup; source edits clear local positions.
