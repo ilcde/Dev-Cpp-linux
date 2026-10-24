@@ -1,0 +1,96 @@
+name: Build and test Windows and Fedora 44
+on:
+  push:
+    branches: [master]
+    paths: ['modern/**', 'docs/**', '.github/workflows/modern.yml', 'README.md']
+  pull_request:
+    paths: ['modern/**', 'docs/**', '.github/workflows/modern.yml', 'README.md']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install './modern[test,package]'
+      - name: Portable GCC and GDB
+        shell: pwsh
+        run: |
+          Invoke-WebRequest 'https://github.com/skeeto/w64devkit/releases/download/v2.10.1/w64devkit-x64-2.10.1.7z.exe' -OutFile toolchain.7z.exe
+          if ((Get-FileHash toolchain.7z.exe -Algorithm SHA256).Hash.ToLower() -ne 'add1edf984ce4d473cfeb7c52e0ab38db73a855bba6c7f564d5e16648eb2896a') { throw 'Checksum mismatch' }
+          7z x toolchain.7z.exe -otoolchain -y
+          "$pwd\toolchain\w64devkit\bin" >> $env:GITHUB_PATH
+      - run: python -m pytest modern/tests -q --junitxml=windows-tests.xml
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - run: python modern/packaging/build.py
+      - name: Packaged Windows executable
+        shell: pwsh
+        run: |
+          $app = Start-Process modern/dist/DevCppModern/DevCppModern.exe -ArgumentList '--smoke-test' -WindowStyle Hidden -PassThru
+          if (-not $app.WaitForExit(30000)) { $app.Kill(); throw 'Application did not close' }
+          if ($app.ExitCode -ne 0) { throw 'Application startup failed' }
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - run: python modern/packaging/bundle.py windows-x86_64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x86_64
+          path: modern/release/*
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-test-results
+          path: windows-tests.xml
+  fedora:
+    runs-on: ubuntu-latest
+    container: fedora:44
+    steps:
+      - name: Fedora 44 build and desktop dependencies
+        run: >-
+          dnf install -y git python3 python3-pip python3-devel gcc gcc-c++ gdb cmake binutils
+          libxkbcommon libxkbcommon-x11 mesa-libEGL mesa-libGL mesa-dri-drivers
+          fontconfig dejavu-sans-fonts dejavu-sans-mono-fonts libX11 libXext libxcb
+          xcb-util-cursor xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm
+          dbus-libs libXrender libXi libSM libICE xorg-x11-server-Xvfb xauth weston
+          wayland-libs pulseaudio-libs alsa-lib libdrm
+      - uses: actions/checkout@v4
+      - run: python3 -m pip install './modern[test,package]'
+      - name: Fedora integration tests (GCC, GDB, Git, PTY, Qt)
+        run: python3 -m pytest modern/tests -q --junitxml=fedora-tests.xml
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - run: python3 modern/packaging/build.py
+      - name: Packaged binary under X11
+        run: xvfb-run -a env QT_QPA_PLATFORM=xcb modern/dist/DevCppModern/DevCppModern --smoke-test
+      - name: Packaged binary under Wayland
+        shell: bash
+        run: |
+          export XDG_RUNTIME_DIR="$(mktemp -d)"
+          chmod 700 "$XDG_RUNTIME_DIR"
+          export WAYLAND_DISPLAY=devcpp-test
+          weston --backend=headless --socket="$WAYLAND_DISPLAY" --idle-time=0 --log=weston.log &
+          compositor=$!
+          trap 'kill "$compositor" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 50); do
+            test -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" && break
+            sleep 0.1
+          done
+          test -S "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" || { cat weston.log; exit 1; }
+          QT_QPA_PLATFORM=wayland modern/dist/DevCppModern/DevCppModern --smoke-test
+      - run: python3 modern/packaging/bundle.py fedora44-x86_64
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fedora44-x86_64
+          path: modern/release/*
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fedora-test-results
+          path: |
+            fedora-tests.xml
+            weston.log

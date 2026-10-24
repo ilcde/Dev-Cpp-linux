@@ -56,3 +56,19 @@ __history/
 *.~*
 MinGW64
 devcpp.exe
+
+# Native Qt workbench
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+.devcpp-build/
+modern/build/
+modern/dist/
+modern/.tools/
+modern/preview.png
+modern/packaging/*.spec
+
+modern/release/
+modern/ci-artifacts/

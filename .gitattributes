@@ -1,0 +1,5 @@
+modern/** text eol=lf
+docs/** text eol=lf
+docs/assets/*.png binary
+.github/**/*.yml text eol=lf
+README.md text eol=lf
